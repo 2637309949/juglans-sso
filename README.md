@@ -1,5 +1,4 @@
-	Remind:
-		This plugin has been merged to bulrush-identify
+This plugin must be dependon bulrush-identify
 
 ## juglans-sso
 	Lightweight sso for Internal security network
