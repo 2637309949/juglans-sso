@@ -1,0 +1,11 @@
+<div>
+    <% if (locals.message) { %>
+    <div><%= message %></div>
+    <% } %>
+    <form action="<%= action %>" method="POST">
+        <input type="hidden" name="_csrf" value="<%= _csrf %>"><br />
+        username: <input type="text" name="username"><br />
+        password: <input type="text" name="password"><br />
+        <button type="submit">Submit</button>
+    </form>
+</div>
