@@ -17,7 +17,7 @@ module.exports = function (app) {
     app.Use(sso.Client({
         server: 'http://127.0.0.1:3001',
         client: 'http://127.0.0.1:3002',
-        callback: async function(ctx, info) {
+        redirect: async function(ctx, info) {
             // binding 
             console.log('info = ', info)
         }

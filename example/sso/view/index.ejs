@@ -1,29 +1,3 @@
-<html>
-<script type="text/javascript">
-  function getCookie(name) {
-    var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
-    if (arr = document.cookie.match(reg))
-      return unescape(arr[2]);
-    else
-      return null;
-  }
-  var accessToken = getCookie('identity');
-  var o = XMLHttpRequest.prototype.open;
-  XMLHttpRequest.prototype.open = function () {
-    var res = o.apply(this, arguments);
-    if (!csrfSafeMethod(arguments[0])) {
-      this.setRequestHeader('accessToken', accessToken);
-    }
-    return res;
-  };
-</script>
-
-<head>
-  <title>sso</title>
-</head>
-
-<body>
-  <%- body %>
-</body>
-
-</html>
+<div>
+    welcome to sso
+</div>
