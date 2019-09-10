@@ -1,0 +1,14 @@
+.index-page-containter {
+    min-height: 100%;
+    display: -webkit-flex;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    align-items: center;
+}
+
+.index-page {
+    width: 360px;
+    color: aliceblue;
+    font-size: 20px;
+}

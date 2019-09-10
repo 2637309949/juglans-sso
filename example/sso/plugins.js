@@ -19,7 +19,7 @@ module.exports = function (app) {
   }))
   app.Use(function ({ httpProxy }) {
     render(httpProxy, {
-      root: path.join(__dirname, 'view'),
+      root: path.join(__dirname, '../../template'),
       layout: 'layout',
       viewExt: 'ejs',
       cache: false,

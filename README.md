@@ -1,3 +1,5 @@
+![sso flash](./assert/20190910124926.png)
+
 This plugin must be dependon bulrush-identify
 
 ## juglans-sso
