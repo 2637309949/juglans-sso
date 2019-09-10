@@ -11,11 +11,15 @@ const sso = require('../../../juglans-sso')
 const { authOption, modelOption } = Identity.options
 const { redis } = require('./utils')
 
+const users = [{
+  username: 'root',
+  password: '111111'
+}]
 
 module.exports = function (app) {
   app.Use(Delivery({
     urlPrefix: '/assets',
-    root: path.join(__dirname, './public')
+    root: path.join(__dirname, '../../public')
   }))
   app.Use(function ({ httpProxy }) {
     render(httpProxy, {
@@ -41,11 +45,10 @@ module.exports = function (app) {
     }).addOptions(
       authOption(async function (ctx) {
         const form = _.pick(ctx.request.body, 'username', 'password')
-        if (form.username === 'root' && form.password === '111111') {
+        const one = users.find(x => x.username === form.username && x.password === form.password)
+        if (one) {
           return {
-            id: 'root',
-            username: 'root',
-            roles: []
+            username: one.username,
           }
         }
         return null
@@ -53,5 +56,10 @@ module.exports = function (app) {
       modelOption(Identity.model.RedisModel({ redis }))
     )
   )
-  app.Use(sso.Server())
+  app.Use(sso.Server({
+    async register (ctx, info) {
+      users.push(info)
+      return true
+    }
+  }))
 }

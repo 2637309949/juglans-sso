@@ -8,18 +8,18 @@ const sso = require('../../../juglans-sso')
 const { redis } = require('./utils')
 
 module.exports = function (app) {
-    app.Use(Identity({
-        fakeTokens: [],
-        fakeUrls: [/\/api\/upload\/.*$/, /\/api\/favicon\.ico$/, /\/api\/test\/mock\/login/]
-    }).addOptions(
-        modelOption(Identity.model.RedisModel({ redis }))
-    ))
-    app.Use(sso.Client({
-        server: 'http://127.0.0.1:3001',
-        client: 'http://127.0.0.1:3002',
-        redirect: async function(ctx, info) {
-            // binding 
-            console.log('info = ', info)
-        }
-    }))
+  app.Use(Identity({
+    fakeTokens: [],
+    fakeUrls: [/\/api\/upload\/.*$/, /\/api\/favicon\.ico$/, /\/api\/test\/mock\/login/]
+  }).addOptions(
+    modelOption(Identity.model.RedisModel({ redis }))
+  ))
+  app.Use(sso.Client({
+    server: 'http://127.0.0.1:3001',
+    client: 'http://127.0.0.1:3002',
+    async binding (ctx, info) {
+      // binding
+      console.log('info = ', info)
+    }
+  }))
 }

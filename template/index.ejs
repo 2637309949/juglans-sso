@@ -2,6 +2,11 @@
 
 <div class="index-page-containter">
     <div class="index-page">
-        Welcome to sso
+        <% if (authorized) { %>
+            <% Object.keys(user).forEach(function(key){ %>
+                <%=key %>:&nbsp;<%=user[key] %>
+              <% }); %>
+        <% } %>
+        <div>Welcome to sso</div>
     </div>
 </div>

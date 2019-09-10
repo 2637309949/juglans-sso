@@ -1,6 +1,7 @@
 // Copyright (c) 2018-2020 Double.  All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
+
 const path = require('path')
 const additions = require('../../../juglans-addition')
 const redis = additions.redis
@@ -17,8 +18,8 @@ repo.logger = logger
 // redis init
 repo.Redis = redis.Redis
 repo.redis = redis.Connect('redis://127.0.0.1:6379', {
-    maxRetriesPerRequest: 3
-  }, function (err) {
+  maxRetriesPerRequest: 3
+}, function (err) {
   if (err) {
     repo.logger.info(`Redis:redis://127.0.0.1:6379 connect failed!`)
     repo.logger.error(err.stack || err.message)

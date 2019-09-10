@@ -17,8 +17,8 @@ repo.logger = logger
 // redis init
 repo.Redis = redis.Redis
 repo.redis = redis.Connect('redis://127.0.0.1:6379', {
-    maxRetriesPerRequest: 3
-  }, function (err) {
+  maxRetriesPerRequest: 3
+}, function (err) {
   if (err) {
     repo.logger.info(`Redis:redis://127.0.0.1:6379 connect failed!`)
     repo.logger.error(err.stack || err.message)
