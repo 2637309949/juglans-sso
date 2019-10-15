@@ -15,10 +15,13 @@ const deepmerge = require('deepmerge');
 
 const fetch = require('node-fetch');
 
+const _ = require('lodash');
+
 const is = require('is');
 
 const defaultCfg = {
   route: {
+    register: '/register',
     login: '/login',
     logout: '/logout',
     redirect: '/redirect',
@@ -29,7 +32,11 @@ const defaultCfg = {
     index: 'index'
   },
 
-  redirect(ctx, info) {
+  binding(ctx, info) {
+    return _asyncToGenerator(function* () {})();
+  },
+
+  register(ctx, info) {
     return _asyncToGenerator(function* () {})();
   }
 
@@ -50,7 +57,8 @@ module.exports.Server = function () {
 
         identity.options.fakeUrls.push(cfg.route.home);
         identity.options.fakeUrls.push(cfg.route.login);
-        identity.options.fakeUrls.push(cfg.route.logout); // handle for login
+        identity.options.fakeUrls.push(cfg.route.logout);
+        identity.options.fakeUrls.push(cfg.route.register); // handle for login
 
         router.get(cfg.route.login,
         /*#__PURE__*/
@@ -68,7 +76,7 @@ module.exports.Server = function () {
               const redirect = ctx.query.redirect_uri || ctx.query.redirect;
 
               if (redirect) {
-                if (redirect.indexOf('?') != -1) {
+                if (redirect.indexOf('?') !== -1) {
                   ctx.redirect(redirect + '&accessToken=' + token.accessToken);
                 } else {
                   ctx.redirect(redirect + '?accessToken=' + token.accessToken);
@@ -99,7 +107,7 @@ module.exports.Server = function () {
                 const redirect = ctx.query.redirect_url || ctx.query.redirect;
 
                 if (redirect) {
-                  if (redirect.indexOf('?') != -1) {
+                  if (redirect.indexOf('?') !== -1) {
                     ctx.redirect(redirect + '&accessToken=' + info.accessToken);
                   } else {
                     ctx.redirect(redirect + '?accessToken=' + info.accessToken);
@@ -126,12 +134,47 @@ module.exports.Server = function () {
           return function (_x3) {
             return _ref4.apply(this, arguments);
           };
+        }()); // post register
+
+        router.post(cfg.route.register,
+        /*#__PURE__*/
+        function () {
+          var _ref5 = _asyncToGenerator(function* (ctx) {
+            try {
+              const form = _.pick(ctx.request.body, 'username', 'password', 'email');
+
+              const ret = yield cfg.register(ctx, form);
+
+              if (ret) {
+                yield ctx.render(cfg.pages.login, {
+                  _csrf: ctx.state.csrf,
+                  action: cfg.route.login + '?' + ctx.querystring
+                });
+              } else {
+                yield ctx.render(cfg.pages.login, {
+                  _csrf: ctx.state.csrf,
+                  action: cfg.route.login + '?' + ctx.querystring,
+                  message: 'Incorrect username or password'
+                });
+              }
+            } catch (error) {
+              yield ctx.render(cfg.pages.login, {
+                _csrf: ctx.state.csrf,
+                action: cfg.route.login + '?' + ctx.querystring,
+                message: error.message
+              });
+            }
+          });
+
+          return function (_x4) {
+            return _ref5.apply(this, arguments);
+          };
         }()); // handle logout
 
         router.get(cfg.route.logout,
         /*#__PURE__*/
         function () {
-          var _ref5 = _asyncToGenerator(function* (ctx, next) {
+          var _ref6 = _asyncToGenerator(function* (ctx, next) {
             const token = yield identity.getToken(ctx); // revoke token
 
             yield identity.model.revokeToken(token && token.accessToken); // revoke cookie
@@ -147,22 +190,35 @@ module.exports.Server = function () {
             }
           });
 
-          return function (_x4, _x5) {
-            return _ref5.apply(this, arguments);
+          return function (_x5, _x6) {
+            return _ref6.apply(this, arguments);
           };
         }()); // handle home
 
         router.get(cfg.route.home,
         /*#__PURE__*/
         function () {
-          var _ref6 = _asyncToGenerator(function* (ctx, next) {
+          var _ref7 = _asyncToGenerator(function* (ctx, next) {
+            // token just has accessToken for route`home` if fake url
+            let token = yield identity.getToken(ctx);
+            const authorized = yield identity.verifyToken(token && token.accessToken); // reload token again
+
+            if (authorized) {
+              token = yield identity.model.findToken(token && token.accessToken);
+            } // extra token info
+
+
+            const user = token && token.extra || {}; // render index
+
             yield ctx.render(cfg.pages.index, {
-              _csrf: ctx.state.csrf
+              _csrf: ctx.state.csrf,
+              authorized,
+              user
             });
           });
 
-          return function (_x6, _x7) {
-            return _ref6.apply(this, arguments);
+          return function (_x7, _x8) {
+            return _ref7.apply(this, arguments);
           };
         }());
       });
@@ -179,11 +235,11 @@ module.exports.Client = function () {
   return (
     /*#__PURE__*/
     function () {
-      var _ref8 = _asyncToGenerator(function* (_ref7) {
+      var _ref9 = _asyncToGenerator(function* (_ref8) {
         let {
           router,
           identity
-        } = _ref7;
+        } = _ref8;
         assert.ok(is.string(cfg.server), 'server url must be provided!');
         assert.ok(is.string(cfg.client), 'client url must be provided!');
         cfg = deepmerge.all([defaultCfg, cfg]); // handle for login
@@ -194,22 +250,22 @@ module.exports.Client = function () {
         router.get(cfg.route.login,
         /*#__PURE__*/
         function () {
-          var _ref9 = _asyncToGenerator(function* (ctx, next) {
+          var _ref10 = _asyncToGenerator(function* (ctx, next) {
             const redirect = ctx.query.redirect || ctx.query.redirect_uri || '';
             let from = url.resolve(cfg.client, cfg.route.redirect + '?redirect_url=' + redirect);
             from = encodeURIComponent(from);
             ctx.redirect(url.resolve(cfg.server, cfg.route.login + '?redirect_url=' + from));
           });
 
-          return function (_x9, _x10) {
-            return _ref9.apply(this, arguments);
+          return function (_x10, _x11) {
+            return _ref10.apply(this, arguments);
           };
         }()); // redirect to sso
 
         router.get(cfg.route.logout,
         /*#__PURE__*/
         function () {
-          var _ref10 = _asyncToGenerator(function* (ctx) {
+          var _ref11 = _asyncToGenerator(function* (ctx) {
             const token = yield identity.getToken(ctx); // revoke token
 
             yield identity.model.revokeToken(token && token.accessToken); // revoke cookie
@@ -225,19 +281,19 @@ module.exports.Client = function () {
             }
           });
 
-          return function (_x11) {
-            return _ref10.apply(this, arguments);
+          return function (_x12) {
+            return _ref11.apply(this, arguments);
           };
         }()); // redirect from sso
 
         router.get(cfg.route.redirect,
         /*#__PURE__*/
         function () {
-          var _ref11 = _asyncToGenerator(function* (ctx, next) {
+          var _ref12 = _asyncToGenerator(function* (ctx, next) {
             const redirect = ctx.query.redirect || ctx.query.redirect_uri || '';
 
             if (ctx.query.accessToken) {
-              ctx.cookies.set('identity', info.accessToken, {
+              ctx.cookies.set('identity', ctx.query.accessToken, {
                 maxAge: 60 * 60 * identity.options.expiresIn
               });
             }
@@ -248,7 +304,7 @@ module.exports.Client = function () {
                 'accessToken': ctx.query.accessToken
               }
             }).then(res => res.json());
-            yield cfg.redirect(ctx, info);
+            yield cfg.binding(ctx, info);
 
             if (!redirect) {
               ctx.redirect(cfg.route.home);
@@ -257,14 +313,14 @@ module.exports.Client = function () {
             }
           });
 
-          return function (_x12, _x13) {
-            return _ref11.apply(this, arguments);
+          return function (_x13, _x14) {
+            return _ref12.apply(this, arguments);
           };
         }());
       });
 
-      return function (_x8) {
-        return _ref8.apply(this, arguments);
+      return function (_x9) {
+        return _ref9.apply(this, arguments);
       };
     }()
   );
